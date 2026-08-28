@@ -1,22 +1,19 @@
 import cv2
-import mediapipe as mp 
-from mediapipe.tasks import python
-from mediapipe.tasks.python import vision
 from mediapipe.tasks.python.vision import HandLandmarksConnections
-
-
-
 from camera.camera import Camera
 from detection.hand_detector import HandDetector
+from features.extractor import LandMarkFeatureExtractor
 
 def main():
     camera = Camera()
     detector = HandDetector()
+    extractor = LandMarkFeatureExtractor()
     
     while True:
         frame = camera.read()
         results = detector.detect(frame)
         
+        # This part Forms the visualization Skeleton
         if results.hand_landmarks:
             for hand_landmarks in results.hand_landmarks:
                 h, w, _ = frame.shape
@@ -50,6 +47,10 @@ def main():
                         (0, 255, 0),
                         2
                     )
+        if results.hand_landmarks:
+            landmarks = results.hand_landmarks[0]
+            features = extractor.extract(landmarks)
+            print(features)
 
         cv2.imshow("Hand Gesture Recognition", frame)
         
