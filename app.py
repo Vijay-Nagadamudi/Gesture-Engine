@@ -1,64 +1,65 @@
 import cv2
-from mediapipe.tasks.python.vision import HandLandmarksConnections
+
 from camera.camera import Camera
 from detection.hand_detector import HandDetector
 from features.extractor import LandMarkFeatureExtractor
+from models.predictor import GesturePredictor
+from visualization.renderer import HandRenderer
+
 
 def main():
     camera = Camera()
     detector = HandDetector()
     extractor = LandMarkFeatureExtractor()
-    
+    predictor = GesturePredictor()
+    renderer = HandRenderer()
+
     while True:
         frame = camera.read()
+
         results = detector.detect(frame)
-        
-        # This part Forms the visualization Skeleton
-        if results.hand_landmarks:
-            for hand_landmarks in results.hand_landmarks:
-                h, w, _ = frame.shape
 
-                # Draw landmarks
-                for landmark in hand_landmarks:
-                    x = int(landmark.x * w)
-                    y = int(landmark.y * h)
-
-                    cv2.circle(frame, (x, y), 5, (0, 255, 0), -1)
-
-                # Draw connections
-                for connection in HandLandmarksConnections.HAND_CONNECTIONS:
-                    start = hand_landmarks[connection.start]
-                    end = hand_landmarks[connection.end]
-
-                    start_point = (
-                        int(start.x * w),
-                        int(start.y * h)
-                    )
-
-                    end_point = (
-                        int(end.x * w),
-                        int(end.y * h)
-                    )
-
-                    cv2.line(
-                        frame,
-                        start_point,
-                        end_point,
-                        (0, 255, 0),
-                        2
-                    )
         if results.hand_landmarks:
             landmarks = results.hand_landmarks[0]
-            features = extractor.extract(landmarks)
-            print(features)
 
-        cv2.imshow("Hand Gesture Recognition", frame)
-        
+            frame = renderer.draw_landmarks(
+                frame,
+                landmarks
+            )
+
+            features = extractor.extract(landmarks)
+
+            gesture, confidence = predictor.predict(features)
+            
+            cv2.putText(
+                frame,
+                f"Gesture : {gesture}",
+                (20, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (255,255,255),
+                2   
+            )
+
+            cv2.putText(
+                frame,
+                f"Confidence: {confidence : .0%}",
+                (20, 90),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.8,
+                (255, 255, 255),
+                2
+            )
+
+        cv2.imshow("Gesture Engine", frame)
+
         if cv2.waitKey(1) & 0xFF == ord("q"):
             break
+
     detector.close()
     camera.release()
     cv2.destroyAllWindows()
 
+
 if __name__ == "__main__":
-    main()    
+    main()
