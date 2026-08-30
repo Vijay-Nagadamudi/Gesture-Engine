@@ -43,6 +43,7 @@ from detection.hand_detector import HandDetector
 from features.extractor import LandMarkFeatureExtractor
 from models.predictor import GesturePredictor
 from visualization.renderer import HandRenderer
+from webhooks import WebhookClient
 
 
 # ============================================================
@@ -51,7 +52,7 @@ from visualization.renderer import HandRenderer
 
 st.set_page_config(
     page_title="Gesture Engine",
-    page_icon="🖐️",
+    page_icon="GE",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -126,28 +127,23 @@ st.markdown(
 }
 
 .block-container {
-    max-width: 1350px;
-    padding-top: 1.5rem;
-    padding-bottom: 2rem;
+    max-width: 1280px;
+    padding-top: 1.7rem;
+    padding-bottom: 2.5rem;
 }
 
 .ge-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding-bottom: 16px;
-    margin-bottom: 18px;
+    padding-bottom: 18px;
+    margin-bottom: 20px;
     border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-
-.ge-icon {
-    font-size: 36px;
 }
 
 .ge-title {
     margin: 0;
-    font-size: 30px;
-    font-weight: 750;
+    font-size: 46px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -0.8px;
     color: #F5F7FB;
 }
 
@@ -243,13 +239,15 @@ st.markdown(
 .ge-gesture {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 9px;
+    gap: 9px;
+    min-height: 38px;
+    padding: 8px 10px;
     border-radius: 9px;
-    background: rgba(255,255,255,.035);
+    background: rgba(255,255,255,.028);
     border: 1px solid rgba(255,255,255,.06);
-    color: #C9CFDC;
+    color: #D2D7E2;
     font-size: 12px;
+    font-weight: 550;
 }
 
 .ge-gesture .emoji {
@@ -282,6 +280,153 @@ st.markdown(
     color: #747E92;
     font-size: 11px;
     line-height: 1.5;
+}
+
+
+.section-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 28px 0 12px;
+}
+
+.section-title {
+    color: #F5F7FB;
+    font-size: 20px;
+    font-weight: 750;
+    letter-spacing: -0.2px;
+}
+
+.section-subtitle {
+    color: #7F899D;
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.section-badge {
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(76,158,255,.08);
+    border: 1px solid rgba(76,158,255,.18);
+    color: #79B7FF;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: .8px;
+}
+
+.webhook-status-card {
+    min-height: 68px;
+    margin-top: 28px;
+    padding: 12px 14px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.status-ready {
+    background: rgba(46,160,67,.08);
+    border: 1px solid rgba(63,185,80,.20);
+}
+
+.status-warning {
+    background: rgba(210,153,34,.08);
+    border: 1px solid rgba(210,153,34,.20);
+}
+
+.status-idle {
+    background: rgba(255,255,255,.025);
+    border: 1px solid rgba(255,255,255,.065);
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    flex: 0 0 8px;
+    border-radius: 50%;
+    background: #727B8D;
+}
+
+.status-ready .status-dot {
+    background: #7EE787;
+    box-shadow: 0 0 0 4px rgba(126,231,135,.08);
+}
+
+.status-warning .status-dot {
+    background: #E3B341;
+    box-shadow: 0 0 0 4px rgba(227,179,65,.08);
+}
+
+.status-main {
+    color: #E8EBF2;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-detail {
+    color: #788296;
+    font-size: 10px;
+    line-height: 1.35;
+    margin-top: 2px;
+}
+
+.webhook-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 10px 0 8px;
+}
+
+.info-item {
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.025);
+    border: 1px solid rgba(255,255,255,.055);
+}
+
+.info-icon {
+    color: #69AFFF;
+    font-size: 14px;
+    line-height: 1.1;
+}
+
+.info-item strong {
+    display: block;
+    color: #DCE1EA;
+    font-size: 10px;
+    letter-spacing: .2px;
+}
+
+.info-item span:not(.info-icon) {
+    display: block;
+    color: #747E92;
+    font-size: 9px;
+    line-height: 1.35;
+    margin-top: 3px;
+}
+
+@media (max-width: 800px) {
+    .webhook-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+
+div[data-testid="stTextInput"] input {
+    background: rgba(255,255,255,.035);
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 10px;
+    color: #E9ECF3;
+    height: 42px;
+}
+
+div[data-testid="stTextInput"] input:focus {
+    border-color: rgba(76,158,255,.65);
+    box-shadow: 0 0 0 1px rgba(76,158,255,.20);
 }
 
 div.stButton > button {
@@ -320,6 +465,7 @@ class GestureVideoProcessor(VideoProcessorBase):
         self.extractor = LandMarkFeatureExtractor()
         self.predictor = GesturePredictor()
         self.renderer = HandRenderer()
+        self.webhook = WebhookClient()
 
         self.frame_count = 0
 
@@ -333,8 +479,8 @@ class GestureVideoProcessor(VideoProcessorBase):
     def _get_first_hand(results):
         """
         Supports both shapes used by the project's earlier detector versions:
-          1) results.hand_landmarks
-          2) a direct list of landmarks
+        1) results.hand_landmarks
+        2) a direct list of landmarks
         """
         if results is None:
             return None
@@ -386,14 +532,28 @@ class GestureVideoProcessor(VideoProcessorBase):
                     features = self.extractor.extract(landmarks)
                     gesture, confidence = self.predictor.predict(features)
 
+                    confidence_value = float(confidence or 0.0)
+
+                    # Only valid stable gestures are webhook events.
+                    # WebhookClient suppresses repeated identical events.
+                    if gesture != "UNKNOWN":
+                        self.webhook.send_gesture(
+                            gesture,
+                            confidence_value,
+                        )
+
                     with self._lock:
                         self.latest_gesture = gesture
-                        self.latest_confidence = float(confidence or 0.0)
+                        self.latest_confidence = confidence_value
                 except Exception:
                     # Keep the last stable prediction if one frame fails.
                     pass
 
         else:
+            # Send the no-hand state once. Repeated no-hand frames are
+            # suppressed inside WebhookClient, so this never spams.
+            self.webhook.send_no_hand()
+
             with self._lock:
                 self.latest_gesture = None
                 self.latest_confidence = 0.0
@@ -490,6 +650,9 @@ class GestureVideoProcessor(VideoProcessorBase):
             cv2.LINE_AA,
         )
 
+    def set_webhook_url(self, url):
+        self.webhook.set_url(url)
+
     def get_state(self):
         with self._lock:
             return (
@@ -506,13 +669,10 @@ class GestureVideoProcessor(VideoProcessorBase):
 st.markdown(
     """
 <div class="ge-header">
-    <div class="ge-icon">🖐️</div>
-    <div>
-        <p class="ge-title">Gesture Engine</p>
-        <p class="ge-subtitle">
-            Real-time hand gesture recognition · low-latency WebRTC pipeline
-        </p>
-    </div>
+    <p class="ge-title">Gesture Engine</p>
+    <p class="ge-subtitle">
+        Real-time hand gesture recognition · low-latency WebRTC pipeline
+    </p>
 </div>
 """,
     unsafe_allow_html=True,
@@ -533,8 +693,6 @@ video_col, info_col = st.columns([2.05, 1], gap="large")
 with video_col:
     st.markdown("### Live Recognition")
 
-    st.markdown('<div class="ge-video">', unsafe_allow_html=True)
-
     webrtc_ctx = webrtc_streamer(
         key="gesture-engine-final",
         mode=WebRtcMode.SENDRECV,
@@ -550,8 +708,6 @@ with video_col:
         },
         async_processing=True,
     )
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if webrtc_ctx.state.playing:
         st.markdown(
@@ -626,16 +782,116 @@ with info_col:
 
     st.markdown(
         f"""
-        <div class="ge-card">
+        <section class="ge-card">
             <h4>Supported Gestures</h4>
-            <div class="ge-gesture-grid">
-                {gesture_html}
+            <div class="ge-gesture-grid">{gesture_html}</div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+
+# ============================================================
+# WEBHOOK CONFIGURATION
+# ============================================================
+
+st.markdown(
+    """
+    <div class="section-heading">
+        <div>
+            <div class="section-title">Webhook</div>
+            <div class="section-subtitle">
+                Send stable gesture events to any HTTP endpoint.
+            </div>
+        </div>
+        <div class="section-badge">ASYNC</div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+webhook_col, webhook_status_col = st.columns([2.2, 1], gap="large")
+
+with webhook_col:
+    webhook_url = st.text_input(
+        "Endpoint URL",
+        value=st.session_state.get("webhook_url", ""),
+        placeholder="https://your-service.com/webhook",
+        label_visibility="visible",
+        help="Gesture Engine sends a POST request with gesture, confidence and timestamp.",
+    )
+
+    st.session_state.webhook_url = webhook_url.strip()
+
+with webhook_status_col:
+    url_configured = st.session_state.webhook_url.startswith(
+        ("http://", "https://")
+    )
+
+    if url_configured:
+        status_class = "status-ready"
+        status_text = "Endpoint ready"
+        status_detail = "Gesture events will be delivered."
+    elif st.session_state.webhook_url:
+        status_class = "status-warning"
+        status_text = "Check endpoint"
+        status_detail = "Use an HTTP or HTTPS URL."
+    else:
+        status_class = "status-idle"
+        status_text = "Not configured"
+        status_detail = "Webhook delivery is disabled."
+
+    st.markdown(
+        f"""
+        <div class="webhook-status-card {status_class}">
+            <div class="status-dot"></div>
+            <div>
+                <div class="status-main">{status_text}</div>
+                <div class="status-detail">{status_detail}</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
+if st.session_state.webhook_url and not url_configured:
+    st.warning("Enter a valid HTTP or HTTPS webhook URL.")
+
+# Keep the WebRTC processor synchronized with the URL entered in the UI.
+if webrtc_ctx.video_processor:
+    webrtc_ctx.video_processor.set_webhook_url(
+        st.session_state.webhook_url
+    )
+
+st.markdown(
+    """
+    <div class="webhook-info">
+        <div class="info-item">
+            <span class="info-icon">↗</span>
+            <div>
+                <strong>POST / JSON</strong>
+                <span>One event per stable gesture transition</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <span class="info-icon">⚡</span>
+            <div>
+                <strong>Non-blocking</strong>
+                <span>Webhook delivery never holds the video frame</span>
+            </div>
+        </div>
+        <div class="info-item">
+            <span class="info-icon">◌</span>
+            <div>
+                <strong>Cooldown protected</strong>
+                <span>Repeated predictions are automatically suppressed</span>
+            </div>
+        </div>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 # ============================================================
 # PIPELINE
@@ -647,17 +903,17 @@ st.markdown(
     """
 <div class="ge-card">
     <div class="ge-pipeline">
-        <div class="ge-node">📷 Camera</div>
+        <div class="ge-node">Camera</div>
         <div class="ge-arrow">→</div>
-        <div class="ge-node">✋ MediaPipe</div>
+        <div class="ge-node">MediaPipe</div>
         <div class="ge-arrow">→</div>
-        <div class="ge-node">📍 21 Landmarks</div>
+        <div class="ge-node">21 Landmarks</div>
         <div class="ge-arrow">→</div>
-        <div class="ge-node">⚙️ 63 Features</div>
+        <div class="ge-node">63 Features</div>
         <div class="ge-arrow">→</div>
-        <div class="ge-node">🧠 SVM</div>
+        <div class="ge-node">SVM</div>
         <div class="ge-arrow">→</div>
-        <div class="ge-node">🎯 Prediction</div>
+        <div class="ge-node">Prediction</div>
     </div>
 </div>
 """,
