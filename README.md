@@ -44,7 +44,7 @@ The project was designed to satisfy the project requirements, including webcam a
 
 ## 3. Requirements
 
-| Assignment requirement | Gesture Engine implementation |
+| Requirement | Gesture Engine implementation |
 |---|---|
 | Laptop webcam | Browser camera through WebRTC |
 | Browser-based interface | Streamlit |
