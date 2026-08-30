@@ -42,7 +42,7 @@ The project was designed to satisfy the project requirements, including webcam a
 
 ---
 
-## 3. Project Requirements
+## 3. Requirements
 
 | Assignment requirement | Gesture Engine implementation |
 |---|---|
@@ -67,55 +67,30 @@ The project was designed to satisfy the project requirements, including webcam a
 # 4. Architecture
 
 ```text
-                    Browser Webcam
-                          │
-                          ▼
-                    Browser WebRTC
-                          │
-                          ▼
-              GestureVideoProcessor
-                          │
-              ┌───────────┴───────────┐
-              ▼                       ▼
-        HandDetector              Frame resize
-         MediaPipe
-              │
-              ▼
-        21 landmarks
-              │
-              ▼
-   LandMarkFeatureExtractor
-              │
-              ▼
-        63 features
-              │
-              ▼
-       GesturePredictor
-              │
-              ▼
-       SVM probabilities
-              │
-              ▼
-   Confidence threshold
-              │
-              ▼
-   7-sample smoothing
-              │
-              ▼
-       Stable gesture
-          │       │
-          │       └──────────────┐
-          ▼                      ▼
-   HandRenderer             WebhookClient
-          │                      │
-          ▼                      ▼
-    Live video overlay       HTTP POST JSON
-                                 │
-                                 ▼
-                          External system
+Browser Webcam
+      ↓
+    WebRTC
+      ↓
+ Hand Detection
+  (MediaPipe)
+      ↓
+ 21 Landmarks
+      ↓
+63 Features
+      ↓
+ SVM Predictor
+      ↓
+Confidence Threshold
+      ↓
+Temporal Smoothing
+      ↓
+ Stable Gesture
+    ↙       ↘
+Render      Webhook
+(OpenCV)   (JSON POST)
 ```
 
----
+The processing path is intentionally linear: the browser supplies the live video through WebRTC, MediaPipe extracts hand landmarks, the feature extractor produces the classifier input, and the predictor produces a confidence-aware temporally smoothed result. The resulting stable state is then used independently for visual rendering and external webhook delivery.
 
 # 5. Repository Structure
 
@@ -244,25 +219,6 @@ Python WebRTC processor
 ```
 
 This avoids putting a blocking `while True` OpenCV capture loop inside Streamlit.
-
-## 6.2 Frame preparation
-
-Incoming `av.VideoFrame` objects are converted to BGR NumPy arrays.
-
-The production processor limits processing width to:
-
-```text
-640 pixels
-```
-
-and requests approximately:
-
-```text
-640 × 360
-24 FPS
-```
-
-This keeps the MediaPipe workload appropriate for a standard laptop.
 
 ## 6.3 Hand detection
 
@@ -857,53 +813,29 @@ The production UI requires browser camera permission.
 
 # 22. Verification Checklist
 
-## Local
+### Application
+- [ ] Streamlit UI loads
+- [ ] WebRTC camera starts
+- [ ] Hand detection and gesture recognition work
+- [ ] Confidence and `UNKNOWN` handling work
 
-- [ ] Streamlit starts
-- [ ] UI loads
-- [ ] Camera permission works
-- [ ] WebRTC starts
-- [ ] Hand landmarks appear
-- [ ] Gesture classification works
-- [ ] Confidence is displayed
-- [ ] Low-confidence predictions become `UNKNOWN`
-
-## Webhook
-
-- [ ] URL can be configured
+### Webhook
 - [ ] Gesture JSON is received
-- [ ] Confidence is included
-- [ ] Timestamp is included
-- [ ] No-hand JSON is received
-- [ ] Repeated gesture events are suppressed
-- [ ] Repeated no-hand events are suppressed
-- [ ] Changing gesture generates a new event
-- [ ] Webhook failure does not crash the application
+- [ ] `hand_not_detected` JSON is received
+- [ ] Repeated states do not spam requests
+- [ ] Gesture changes generate new events
+- [ ] Webhook failures do not stop recognition
 
-## Docker
-
-- [ ] Image builds
-- [ ] Container starts
-- [ ] Streamlit is reachable on port 8501
-- [ ] OpenCV loads
-- [ ] MediaPipe loads
-- [ ] HandDetector initializes
+### Docker
+- [ ] Image builds successfully
+- [ ] Container starts on port 8501
+- [ ] MediaPipe initializes inside the container
 - [ ] Browser camera works
-- [ ] Gesture recognition works
-- [ ] Webhook works
+- [ ] Gesture recognition and webhook integration work
 
-## Repository
-
-- [ ] Source code committed
-- [ ] `requirements.txt` committed
-- [ ] `Dockerfile` committed
-- [ ] `webhooks.py` committed
-- [ ] README committed
-- [ ] `.gitignore` present
-- [ ] `.venv` excluded
-- [ ] Secrets excluded
-
----
+### Repository
+- [ ] `Dockerfile`, `requirements.txt`, `webhooks.py`, and README are committed
+- [ ] `.venv` and secrets are excluded
 
 # 23. GitHub
 
